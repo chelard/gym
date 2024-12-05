@@ -24,6 +24,7 @@ class DatabaseSeeder extends Seeder
         //client call seeder
         $this->call([
             ClientSeeder::class,
+            PlanSeeder::class,
         ]);
 
 
