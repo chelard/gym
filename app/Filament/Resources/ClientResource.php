@@ -32,31 +32,14 @@ class ClientResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('name')
+                    ->label('Nombre')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('email')
+                    ->label('Correo electrónico')
                     ->searchable(),
                 Tables\Columns\TextColumn::make('phone')
+                    ->label('Teléfono')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('address')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('date_of_birth')
-                    ->date()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('registration_date')
-                    ->date()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('emergency_contact_name')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('emergency_contact_phone')
-                    ->searchable(),
-                Tables\Columns\TextColumn::make('created_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
                 //

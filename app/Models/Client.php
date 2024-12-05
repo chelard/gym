@@ -2,14 +2,20 @@
 
 namespace App\Models;
 
+use App\Http\Controllers\ClientController;
+use Filament\Forms\Components\Actions\Action;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Section;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Set;
+use Filament\Notifications\Notification;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 class Client extends Model
 {
+    use HasFactory;
     protected $guarded = [];
 
     protected $casts = [
@@ -25,10 +31,32 @@ class Client extends Model
             ->schema(
                 [
                     TextInput::make('dni')
-                        ->label(__('DNI'))
                         ->required()
+                        ->label('DNI')
+                        ->length(8)
                         ->numeric()
-                        ->maxLength(255),
+                        ->suffixAction(
+                            Action::make('getDni')
+                                ->icon('heroicon-m-clipboard')
+
+                                ->action(function (Set $set, callable $get) {
+                                    $dni = $get('dni');
+                                    if (preg_match('/^\d{8}$/', $dni)) {
+                                        $controller = new ClientController();
+                                        $nombreCompleto = $controller->getDni($dni);
+                                        $set('name', $nombreCompleto);
+                                    } else {
+                                        // Manejar el error de validación
+                                        Notification::make()
+                                            ->title('Error: DNI inválido')
+                                            ->icon('heroicon-o-exclamation-circle')
+                                            ->send();
+                                    }
+
+
+
+                                })
+                        ),
                     TextInput::make('name')
                         ->label(__('Nombres'))
                         ->required()
@@ -78,6 +106,8 @@ class Client extends Model
 
         ];
     }
+
+
 
 
 }
