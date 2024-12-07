@@ -40,25 +40,39 @@ class Suscription extends Model
                     ->label(__('Tipo de Plan'))
                     ->relationship('plan', 'name')
                     ->default(1)
-                    ->required(),
+                    ->required()
+                    ->reactive()
+                    ->live()
+                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                        $plan = \App\Models\Plan::find($state);
+
+                        $start_date = \Carbon\Carbon::parse($get('start_date'));
+                        $end_date = $start_date?->copy()->addDays($plan ? $plan->days_duration : 0);
+                        ray($end_date);
+                        $set('end_date', now());
+                        $set('price_paid', $plan ? $plan->price : null);
+
+                        $set('frozen_days', $plan ? $plan->freeze_days : 0);
+                        $set('remaining_days', $plan ? $plan->days_duration : 0);
+                    }),
 
                 DatePicker::make('start_date')
                     ->label(__('Fecha de Inicio'))
                     ->default(now())
                     ->required(),
                 DatePicker::make('end_date')
+                    ->format('d/m/Y')
                     ->label(__('Fecha de Fin'))
-                    ->default(now())
                     ->required(),
                 TextInput::make('price_paid')
                     ->label(__('Precio Pagado'))
                     ->required()
                     ->numeric(),
-                TextInput::make('status')
+               Select::make('status')
                     ->label(__('Estado'))
-                    ->required()
-                    ->maxLength(255)
-                    ->default(SubscriptionStatus::Activa),
+                    ->options(SubscriptionStatus::getLabels())
+                    ->default(SubscriptionStatus::Activa)
+                    ->required(),
                 TextInput::make('frozen_days')
                     ->label(__('Días Congelados'))
                     ->required()

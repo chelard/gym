@@ -9,6 +9,7 @@ use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Plan extends Model
 {
@@ -70,6 +71,11 @@ class Plan extends Model
 
 
 
+    }
+
+    public function suscriptions(): HasMany
+    {
+        return $this->hasMany(Suscription::class);
     }
 
 

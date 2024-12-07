@@ -32,29 +32,31 @@ class SuscriptionResource extends Resource
         return $table
             ->columns([
                 Tables\Columns\TextColumn::make('client.name')
+                    ->label(__('Cliente'))
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('plan.name')
+                    ->label(__('Tipo de Plan'))
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('start_date')
+                    ->label(__('Fecha de Inicio'))
                     ->date()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('end_date')
+                    ->label(__('Fecha de Fin'))
                     ->date()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('price_paid')
-                    ->numeric()
-                    ->sortable(),
+
                 Tables\Columns\TextColumn::make('status')
+                    ->label(__('Estado'))
                     ->searchable(),
                 Tables\Columns\TextColumn::make('frozen_days')
+                    ->label(__('Días congelados'))
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('last_access_date')
-                    ->date()
-                    ->sortable(),
                 Tables\Columns\TextColumn::make('remaining_days')
+                    ->label(__('Días restantes'))
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
@@ -93,5 +95,16 @@ class SuscriptionResource extends Resource
             'create' => Pages\CreateSuscription::route('/create'),
             'edit' => Pages\EditSuscription::route('/{record}/edit'),
         ];
+    }
+
+    public static function getLabel(): ?string
+    {
+        return __('Suscripción');
+    }
+
+    public static function getPluralLabel(): ?string
+    {
+        return __('Suscripciones');
+
     }
 }
