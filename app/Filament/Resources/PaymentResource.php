@@ -2,9 +2,9 @@
 
 namespace App\Filament\Resources;
 
-use App\Filament\Resources\SuscriptionResource\Pages;
-use App\Filament\Resources\SuscriptionResource\RelationManagers;
-use App\Models\Suscription;
+use App\Filament\Resources\PaymentResource\Pages;
+use App\Filament\Resources\PaymentResource\RelationManagers;
+use App\Models\Payment;
 use Filament\Forms;
 use Filament\Forms\Form;
 use Filament\Resources\Resource;
@@ -13,9 +13,9 @@ use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 
-class SuscriptionResource extends Resource
+class PaymentResource extends Resource
 {
-    protected static ?string $model = Suscription::class;
+    protected static ?string $model = Payment::class;
 
     protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
 
@@ -23,7 +23,7 @@ class SuscriptionResource extends Resource
     {
         return $form
             ->schema(
-                Suscription::getForm(),
+                Payment::getForm(),
             );
     }
 
@@ -31,32 +31,24 @@ class SuscriptionResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('client.name')
-                    ->label(__('Cliente'))
+                Tables\Columns\TextColumn::make('suscription.id')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('plan.name')
-                    ->label(__('Tipo de Plan'))
-                    ->numeric()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('start_date')
-                    ->label(__('Fecha de Inicio'))
-                    ->date()
-                    ->sortable(),
-                Tables\Columns\TextColumn::make('end_date')
-                    ->label(__('Fecha de Fin'))
-                    ->date()
-                    ->sortable(),
-
-                Tables\Columns\TextColumn::make('status')
-                    ->label(__('Estado'))
+                Tables\Columns\TextColumn::make('payment_date')
                     ->searchable(),
-                Tables\Columns\TextColumn::make('frozen_days')
-                    ->label(__('Días congelados'))
+                Tables\Columns\TextColumn::make('amount')
                     ->numeric()
                     ->sortable(),
-                Tables\Columns\TextColumn::make('remaining_days')
-                    ->label(__('Días restantes'))
+                Tables\Columns\TextColumn::make('payment_method')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('reference_transaction')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('status')
+                    ->searchable(),
+                Tables\Columns\TextColumn::make('installment_number')
+                    ->numeric()
+                    ->sortable(),
+                Tables\Columns\TextColumn::make('total_installments')
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('created_at')
@@ -84,27 +76,16 @@ class SuscriptionResource extends Resource
     public static function getRelations(): array
     {
         return [
-            RelationManagers\PaymentsRelationManager::class,
+            //
         ];
     }
 
     public static function getPages(): array
     {
         return [
-            'index' => Pages\ListSuscriptions::route('/'),
-            'create' => Pages\CreateSuscription::route('/create'),
-            'edit' => Pages\EditSuscription::route('/{record}/edit'),
+            'index' => Pages\ListPayments::route('/'),
+            'create' => Pages\CreatePayment::route('/create'),
+            'edit' => Pages\EditPayment::route('/{record}/edit'),
         ];
-    }
-
-    public static function getLabel(): ?string
-    {
-        return __('Suscripción');
-    }
-
-    public static function getPluralLabel(): ?string
-    {
-        return __('Suscripciones');
-
     }
 }
