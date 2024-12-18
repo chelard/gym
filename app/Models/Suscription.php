@@ -7,6 +7,7 @@ use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Wizard;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -31,64 +32,88 @@ class Suscription extends Model
     public static function getForm(): array
     {
         return[
+            Wizard::make([
+                Wizard\Step::make('Cliente')
+                    ->columnSpan('full')
+                    ->schema([
+                        Select::make('client_id')
+                            ->label(__('Cliente'))
+                            ->relationship('client', 'name')
+                            ->searchable()
+                            ->required(),
+                        Select::make('plan_id')
+                            ->label(__('Tipo de Plan'))
+                            ->relationship('plan', 'name')
+                            ->default(1)
+                            ->required()
+                            ->reactive()
+                            ->live()
+                            ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                                $plan = \App\Models\Plan::find($state);
 
-                Select::make('client_id')
-                    ->label(__('Cliente'))
-                    ->relationship('client', 'name')
-                    ->searchable()
-                    ->required(),
-                Select::make('plan_id')
-                    ->label(__('Tipo de Plan'))
-                    ->relationship('plan', 'name')
-                    ->default(1)
-                    ->required()
-                    ->reactive()
-                    ->live()
-                    ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                        $plan = \App\Models\Plan::find($state);
+                                $start_date = \Carbon\Carbon::parse($get('start_date'));
+                                $end_date = $start_date?->copy()->addDays($plan ? $plan->days_duration : 0);
+                                ray($end_date);
+                                $set('end_date', now());
+                                $set('price_paid', $plan ? $plan->price : null);
 
-                        $start_date = \Carbon\Carbon::parse($get('start_date'));
-                        $end_date = $start_date?->copy()->addDays($plan ? $plan->days_duration : 0);
-                        ray($end_date);
-                        $set('end_date', now());
-                        $set('price_paid', $plan ? $plan->price : null);
+                                $set('frozen_days', $plan ? $plan->freeze_days : 0);
+                                $set('remaining_days', $plan ? $plan->days_duration : 0);
+                            }),
+                        DatePicker::make('start_date')
+                            ->label(__('Fecha de Inicio'))
+                            ->default(now())
+                            ->required(),
+                        DatePicker::make('end_date')
+                            ->label(__('Fecha de Fin'))
+                            ->required(),
+                        TextInput::make('price_paid')
+                            ->label(__('Precio Pagado'))
+                            ->required()
+                            ->numeric(),
+                        Select::make('status')
+                            ->label(__('Estado'))
+                            ->options(SubscriptionStatus::getLabels())
+                            ->default(SubscriptionStatus::Activa)
+                            ->required(),
+                        TextInput::make('frozen_days')
+                            ->label(__('Días Congelados'))
+                            ->required()
+                            ->numeric()
+                            ->default(0),
+                        DatePicker::make('last_access_date')
+                            ->label(__('Último Acceso'))
+                            ->default(now())
+                            ->required(),
+                        TextInput::make('remaining_days')
+                            ->label(__('Días Restantes'))
+                            ->numeric(),
+                        Textarea::make('notes')
+                            ->label(__('Notas'))
+                            ->columnSpanFull(),
+                ]),
+                Wizard\Step::make('Pagos')
 
-                        $set('frozen_days', $plan ? $plan->freeze_days : 0);
-                        $set('remaining_days', $plan ? $plan->days_duration : 0);
-                    }),
+                    ->schema([
+                        DatePicker::make('payment_date')
+                            ->required()
+                            ->default(now()),
+                        TextInput::make('amount')
+                            ->required()
+                            ->numeric(),
+                        TextInput::make('payment_method')
+                            ->required()
+                            ->maxLength(255)
+                            ->default('Efectivo'),
 
-                DatePicker::make('start_date')
-                    ->label(__('Fecha de Inicio'))
-                    ->default(now())
-                    ->required(),
-                DatePicker::make('end_date')
-                    ->format('d/m/Y')
-                    ->label(__('Fecha de Fin'))
-                    ->required(),
-                TextInput::make('price_paid')
-                    ->label(__('Precio Pagado'))
-                    ->required()
-                    ->numeric(),
-               Select::make('status')
-                    ->label(__('Estado'))
-                    ->options(SubscriptionStatus::getLabels())
-                    ->default(SubscriptionStatus::Activa)
-                    ->required(),
-                TextInput::make('frozen_days')
-                    ->label(__('Días Congelados'))
-                    ->required()
-                    ->numeric()
-                    ->default(0),
-                DatePicker::make('last_access_date')
-                    ->label(__('Último Acceso'))
-                    ->default(now())
-                    ->required(),
-                TextInput::make('remaining_days')
-                    ->label(__('Días Restantes'))
-                    ->numeric(),
-                Textarea::make('notes')
-                    ->label(__('Notas'))
-                    ->columnSpanFull(),
+                        ]),
+
+            ]),
+
+
+
+
+
 
         ];
 
