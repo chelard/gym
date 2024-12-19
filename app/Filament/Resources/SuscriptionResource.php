@@ -33,6 +33,7 @@ class SuscriptionResource extends Resource
             ->columns([
                 Tables\Columns\TextColumn::make('client.name')
                     ->label(__('Cliente'))
+                    ->searchable()
                     ->numeric()
                     ->sortable(),
                 Tables\Columns\TextColumn::make('plan.name')

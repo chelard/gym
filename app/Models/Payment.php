@@ -29,9 +29,6 @@ class Payment extends Model
     {
         return(
         [
-            Select::make('suscription_id')
-                ->relationship('suscription', 'id')
-                ->required(),
 
             TextInput::make('payment_date')
                 ->required()

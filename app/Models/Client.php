@@ -107,6 +107,61 @@ class Client extends Model
         ];
     }
 
+    public static function getSimpleForm()
+{
+    return [
+        Section::make('Datos')
+            ->columns(2)
+            ->schema(
+                [
+                    TextInput::make('dni')
+                        ->required()
+                        ->label('DNI')
+                        ->length(8)
+                        ->numeric()
+                        ->suffixAction(
+                            Action::make('getDni')
+                                ->icon('heroicon-m-clipboard')
+
+                                ->action(function (Set $set, callable $get) {
+                                    $dni = $get('dni');
+                                    if (preg_match('/^\d{8}$/', $dni)) {
+                                        $controller = new ClientController();
+                                        $nombreCompleto = $controller->getDni($dni);
+                                        $set('name', $nombreCompleto);
+                                    } else {
+                                        // Manejar el error de validación
+                                        Notification::make()
+                                            ->title('Error: DNI inválido')
+                                            ->icon('heroicon-o-exclamation-circle')
+                                            ->send();
+                                    }
+
+
+
+                                })
+                        ),
+                    TextInput::make('name')
+                        ->label(__('Nombres'))
+                        ->required()
+                        ->maxLength(255),
+                    TextInput::make('email')
+                        ->label(__('Correo Electrónico'))
+                        ->email()
+                        ->required()
+                        ->maxLength(255),
+                    TextInput::make('phone')
+                        ->label(__('Teléfono'))
+                        ->tel()
+                        ->maxLength(255),
+                ]
+            ),
+    ];
+
+
+
+}
+
 
 
 

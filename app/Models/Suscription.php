@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\PaymentMethod;
 use App\Enums\SubscriptionStatus;
 use Filament\Forms\Components\DatePicker;
 use Filament\Forms\Components\Select;
@@ -12,6 +13,9 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Blade;
+use Illuminate\Support\Facades\Date;
+use Illuminate\Support\HtmlString;
 
 class Suscription extends Model
 {
@@ -35,80 +39,27 @@ class Suscription extends Model
             Wizard::make([
                 Wizard\Step::make('Cliente')
                     ->columnSpan('full')
-                    ->schema([
-                        Select::make('client_id')
-                            ->label(__('Cliente'))
-                            ->relationship('client', 'name')
-                            ->searchable()
-                            ->required(),
-                        Select::make('plan_id')
-                            ->label(__('Tipo de Plan'))
-                            ->relationship('plan', 'name')
-                            ->default(1)
-                            ->required()
-                            ->reactive()
-                            ->live()
-                            ->afterStateUpdated(function ($state, callable $set, callable $get) {
-                                $plan = \App\Models\Plan::find($state);
-
-                                $start_date = \Carbon\Carbon::parse($get('start_date'));
-                                $end_date = $start_date?->copy()->addDays($plan ? $plan->days_duration : 0);
-                                ray($end_date);
-                                $set('end_date', now());
-                                $set('price_paid', $plan ? $plan->price : null);
-
-                                $set('frozen_days', $plan ? $plan->freeze_days : 0);
-                                $set('remaining_days', $plan ? $plan->days_duration : 0);
-                            }),
-                        DatePicker::make('start_date')
-                            ->label(__('Fecha de Inicio'))
-                            ->default(now())
-                            ->required(),
-                        DatePicker::make('end_date')
-                            ->label(__('Fecha de Fin'))
-                            ->required(),
-                        TextInput::make('price_paid')
-                            ->label(__('Precio Pagado'))
-                            ->required()
-                            ->numeric(),
-                        Select::make('status')
-                            ->label(__('Estado'))
-                            ->options(SubscriptionStatus::getLabels())
-                            ->default(SubscriptionStatus::Activa)
-                            ->required(),
-                        TextInput::make('frozen_days')
-                            ->label(__('Días Congelados'))
-                            ->required()
-                            ->numeric()
-                            ->default(0),
-                        DatePicker::make('last_access_date')
-                            ->label(__('Último Acceso'))
-                            ->default(now())
-                            ->required(),
-                        TextInput::make('remaining_days')
-                            ->label(__('Días Restantes'))
-                            ->numeric(),
-                        Textarea::make('notes')
-                            ->label(__('Notas'))
-                            ->columnSpanFull(),
-                ]),
+                    ->description('Datos del Cliente')
+                    ->schema(
+                        self::getSuscriptionForm()
+                    ),
                 Wizard\Step::make('Pagos')
+                    ->description('Datos de los Pagos')
+                    ->schema(
+                        self::getPaymentForm()
+                    ),
 
-                    ->schema([
-                        DatePicker::make('payment_date')
-                            ->required()
-                            ->default(now()),
-                        TextInput::make('amount')
-                            ->required()
-                            ->numeric(),
-                        TextInput::make('payment_method')
-                            ->required()
-                            ->maxLength(255)
-                            ->default('Efectivo'),
-
-                        ]),
-
-            ]),
+            ])
+                ->columnSpan('full')
+                ->columns(2)
+                ->submitAction(new HtmlString(Blade::render(<<<BLADE
+                    <x-filament::button
+                        type="submit"
+                        size="sm"
+                    >
+                        Submit
+                    </x-filament::button>
+                BLADE))),
 
 
 
@@ -117,6 +68,108 @@ class Suscription extends Model
 
         ];
 
+    }
+
+    /**
+     * @return array
+     */
+    public static function getSuscriptionForm(): array
+    {
+        return [
+            Select::make('client_id')
+                ->label(__('Cliente'))
+                ->relationship('client', 'name')
+                ->searchable()
+                ->required()
+                ->createOptionForm(
+                    Client::getSimpleForm(),
+                ),
+            Select::make('plan_id')
+                ->label(__('Tipo de Plan'))
+                ->relationship('plan', 'name')
+                ->required()
+                ->reactive()
+                ->live()
+                ->afterStateUpdated(function ($state, callable $set, callable $get) {
+                    $plan = \App\Models\Plan::find($state);
+
+                    $start_date = \Carbon\Carbon::parse($get('start_date'));
+                    $end_date = $start_date->copy()->addDays($plan->days_duration);
+                    $formatted_end_date = $end_date->format('d/m/Y');
+                    $set('end_date', $formatted_end_date);
+                    ray($formatted_end_date);
+                    $set('end_date', $formatted_end_date);
+                    $set('price_paid', $plan ? $plan->price : null);
+                    $set('amount', $plan ? $plan->price : null);
+                    $set('frozen_days', $plan ? $plan->freeze_days : 0);
+                    $set('remaining_days', $plan ? $plan->days_duration : 0);
+
+                }),
+            DatePicker::make('start_date')
+                ->label(__('Fecha de Inicio'))
+                ->default(now())
+                ->required(),
+            TextInput::make('end_date')
+                ->readOnly(true)
+                ->label(__('Fecha de Fin'))
+                ->required(),
+            TextInput::make('price_paid')
+                ->label(__('Precio Pagado'))
+                ->required()
+                ->numeric(),
+            Select::make('status')
+                ->label(__('Estado'))
+                ->options(SubscriptionStatus::getLabels())
+                ->default(SubscriptionStatus::Activa)
+                ->required(),
+            TextInput::make('frozen_days')
+                ->label(__('Días Congelados'))
+                ->required()
+                ->numeric()
+                ->default(0),
+            DatePicker::make('last_access_date')
+                ->label(__('Último Acceso'))
+                ->default(now())
+                ->required(),
+            TextInput::make('remaining_days')
+                ->label(__('Días Restantes'))
+                ->numeric(),
+            Textarea::make('notes')
+                ->label(__('Notas'))
+                ->columnSpanFull(),
+        ];
+    }
+
+    /**
+     * @return array
+     */
+    public static function getPaymentForm(): array
+    {
+        return [
+            DatePicker::make('payment_date')
+                ->label(__('Fecha de Pago'))
+                ->readOnly(true)
+                ->required()
+                ->default(now()),
+            TextInput::make('amount')
+                ->label(__('Monto Pagado'))
+                ->required()
+                ->numeric(),
+            Select::make('payment_method')
+                ->required()
+                ->label(__('Método de Pago'))
+                ->options(PaymentMethod::getLabels())
+                ->default(PaymentMethod::Efectivo),
+            TextInput::make('reference_transaction')
+                ->label(__('Referencia de Transacción')),
+            Select::make('status')
+                ->label(__('Estado'))
+                ->options(SubscriptionStatus::getLabels())
+                ->default(SubscriptionStatus::Activa)
+                ->required(),
+
+
+        ];
     }
 
     public function client(): BelongsTo

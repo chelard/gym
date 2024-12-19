@@ -30,7 +30,15 @@ class PaymentsRelationManager extends RelationManager
         return $table
             ->recordTitleAttribute('amount')
             ->columns([
-                Tables\Columns\TextColumn::make('amount'),
+                Tables\Columns\TextColumn::make('amount')
+                    ->label('Monto Pagado'),
+                Tables\Columns\TextColumn::make('payment_date')
+                    ->label('Fecha de Pago'),
+
+                Tables\Columns\TextColumn::make('payment_method')
+                    ->label('Método de Pago'),
+                Tables\Columns\TextColumn::make('reference_transaction')
+                    ->label('Ref. de Transacción'),
             ])
             ->filters([
                 //
@@ -51,6 +59,8 @@ class PaymentsRelationManager extends RelationManager
 
     public function isReadOnly(): bool
     {
-        return false;
+        return true;
     }
+
+
 }
