@@ -18,15 +18,15 @@ class PlanSeeder extends Seeder
             'name' => 'Mensual',
             'type' => PlanType::Tiempo,
             'days_duration' => 30,
-            'price' => 100,
+            'price' => 120,
             'freeze_days' => 10,
         ]);
 
         Plan::create([
-            'name' => 'Trimestral',
+            'name' => '4 Meses',
             'type' => PlanType::Tiempo,
             'days_duration' => 90,
-            'price' => 250,
+            'price' => 300,
             'freeze_days' => 30,
         ]);
 
@@ -34,7 +34,7 @@ class PlanSeeder extends Seeder
             'name' => 'Semestral',
             'type' => PlanType::Tiempo,
             'days_duration' => 180,
-            'price' => 350,
+            'price' => 400,
             'freeze_days' => 60,
         ]);
 
@@ -42,7 +42,7 @@ class PlanSeeder extends Seeder
             'name' => 'Anual',
             'type' => PlanType::Tiempo,
             'days_duration' => 365,
-            'price' => 500,
+            'price' => 600,
             'freeze_days' => 90,
         ]);
 
@@ -51,6 +51,14 @@ class PlanSeeder extends Seeder
             'type' => PlanType::Tiempo,
             'days_duration' => 30,
             'price' => 150,
+            'freeze_days' => 0,
+        ]);
+
+        Plan::create([
+            'name' => 'Prueba 2 días',
+            'type' => PlanType::Tiempo,
+            'days_duration' => 2,
+            'price' => 0,
             'freeze_days' => 0,
         ]);
 

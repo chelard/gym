@@ -27,6 +27,8 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('/')
             ->login()
+            ->brandName('GYM BRIT FITNESS')
+
             ->colors([
                 'primary' => Color::Amber,
             ])
